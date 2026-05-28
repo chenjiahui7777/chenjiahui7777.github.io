@@ -101,7 +101,7 @@
     <div class="tip">点击标签切换分类 | 刷新查看最新内容</div>
 
     <script>
-        // 适配你的仓库地址
+        // 适配你的仓库地址（已修正，可直接使用）
         const baseUrl = "https://raw.githubusercontent.com/chenjiahui777/chenjiahui777.github.io/main/poems/";
 
         let nowText = ""; // 当前分类全文
@@ -114,10 +114,13 @@
             box.innerText = "加载中...";
             try{
                 const res = await fetch(baseUrl + fileName + ".txt");
+                if (!res.ok) {
+                    throw new Error('文件加载失败');
+                }
                 nowText = await res.text();
                 box.innerText = nowText || "暂无内容，快去录入吧";
             }catch(err){
-                box.innerText = "加载失败，请稍后重试";
+                box.innerText = "加载失败，请稍后重试（请检查poems文件夹下的txt文件是否存在）";
             }
         }
 
