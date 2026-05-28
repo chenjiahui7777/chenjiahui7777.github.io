@@ -101,22 +101,18 @@
     <div class="tip">点击标签切换分类 | 刷新查看最新内容</div>
 
     <script>
-        // 已修正为你的正确用户名 chenjiahui7777（四个7）
         const baseUrl = "https://chenjiahui7777.github.io/chenjiahui7777.github.io/poems/";
 
-        let nowText = ""; // 当前分类全文
+        let nowText = "";
         const box = document.getElementById("poemBox");
         const input = document.getElementById("searchInput");
         const btns = document.querySelectorAll(".tab button");
 
-        // 加载对应分类文本
         async function loadText(fileName){
             box.innerText = "加载中...";
             try{
                 const res = await fetch(baseUrl + fileName + ".txt");
-                if (!res.ok) {
-                    throw new Error('文件加载失败');
-                }
+                if (!res.ok) throw new Error('加载失败');
                 nowText = await res.text();
                 box.innerText = nowText || "暂无内容，快去录入吧";
             }catch(err){
@@ -124,30 +120,26 @@
             }
         }
 
-        // 搜索功能
         function doSearch(){
             const key = input.value.trim();
             if(!key){
                 box.innerText = nowText;
                 return;
             }
-            // 按关键词匹配，标红关键词
             const reg = new RegExp(key,"g");
             const result = nowText.replace(reg,`<span style="color:red;">${key}</span>`);
             box.innerHTML = result || "未找到相关诗词";
         }
 
-        // 分类切换绑定事件
         btns.forEach(btn => {
             btn.addEventListener("click",()=>{
                 btns.forEach(b=>b.classList.remove("active"));
                 btn.classList.add("active");
-                input.value = ""; // 清空搜索框
+                input.value = "";
                 loadText(btn.dataset.name);
             })
         });
 
-        // 页面默认加载唐诗
         loadText("tang");
     </script>
 </body>
