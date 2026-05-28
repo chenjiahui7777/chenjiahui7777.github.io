@@ -15,7 +15,6 @@
             color:#3a2e1f;
         }
         h1{text-align:center;margin-bottom:20px;}
-        /* 搜索栏 */
         .search-box{
             display:flex;
             gap:8px;
@@ -37,7 +36,6 @@
             border-radius:4px;
             cursor:pointer;
         }
-        /* 分类标签 */
         .tab{
             display:flex;
             justify-content:center;
@@ -61,7 +59,6 @@
             text-decoration:none;
             border-radius:4px;
         }
-        /* 内容区域 */
         .content{
             background:#fff;
             padding:30px;
@@ -71,24 +68,34 @@
             min-height:300px;
             white-space:pre-wrap;
         }
+        .content .highlight{
+            color: #d32f2f;
+            font-weight: bold;
+            background: #ffebee;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
         .tip{
             text-align:center;
             margin-top:30px;
             color:#888;
             font-size:14px;
         }
+        .error{
+            color: #c62828;
+            text-align: center;
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
     <h1>诗词雅集</h1>
 
-    <!-- 搜索区域 -->
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="输入关键词搜索诗词、作者、名句" onkeydown="if(event.keyCode===13)doSearch()">
+        <input type="text" id="searchInput" placeholder="输入关键词搜索诗词、作者、名句" onkeydown="if(event.key==='Enter')doSearch()">
         <button onclick="doSearch()">搜索</button>
     </div>
 
-    <!-- 分类切换 -->
     <div class="tab">
         <button class="active" data-name="tang">唐诗</button>
         <button data-name="song">宋词</button>
@@ -96,27 +103,41 @@
         <a href="https://github.com/chenjiahui7777/chenjiahui7777.github.io/tree/main/poems" target="_blank">录入诗词</a>
     </div>
 
-    <!-- 诗词展示区 -->
     <div class="content" id="poemBox">加载中...</div>
     <div class="tip">点击标签切换分类 | 刷新查看最新内容</div>
 
     <script>
-        const baseUrl = "https://chenjiahui7777.github.io/chenjiahui7777.github.io/poems/";
+        // ⚠️ 检查这个路径是否正确！
+        const baseUrl = "https://chenjiahui7777.github.io/poems/";
+        // 如果上面不行，试试：const baseUrl = "https://chenjiahui7777.github.io/你的仓库名/poems/";
 
         let nowText = "";
         const box = document.getElementById("poemBox");
         const input = document.getElementById("searchInput");
         const btns = document.querySelectorAll(".tab button");
 
+        // 转义 HTML 特殊字符，防止 XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 转义正则特殊字符
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         async function loadText(fileName){
             box.innerText = "加载中...";
             try{
                 const res = await fetch(baseUrl + fileName + ".txt");
-                if (!res.ok) throw new Error('加载失败');
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                 nowText = await res.text();
                 box.innerText = nowText || "暂无内容，快去录入吧";
             }catch(err){
-                box.innerText = "加载失败，请稍后重试";
+                console.error(err);
+                box.innerHTML = `<div class="error">加载失败<br><small>${err.message}</small><br><br>请检查网络连接或文件路径是否正确</div>`;
             }
         }
 
@@ -126,21 +147,31 @@
                 box.innerText = nowText;
                 return;
             }
-            const reg = new RegExp(key,"g");
-            const result = nowText.replace(reg,`<span style="color:red;">${key}</span>`);
+            if(!nowText){
+                box.innerText = "暂无内容可搜索";
+                return;
+            }
+
+            const safeKey = escapeHtml(key);
+            const safeText = escapeHtml(nowText);
+            const reg = new RegExp(escapeRegExp(safeKey), "g");
+            
+            const result = safeText.replace(reg, `<span class="highlight">${safeKey}</span>`);
             box.innerHTML = result || "未找到相关诗词";
         }
 
         btns.forEach(btn => {
-            btn.addEventListener("click",()=>{
-                btns.forEach(b=>b.classList.remove("active"));
+            btn.addEventListener("click", () => {
+                btns.forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 input.value = "";
                 loadText(btn.dataset.name);
-            })
+            });
         });
 
+        // 初始化加载
         loadText("tang");
     </script>
 </body>
 </html>
+
