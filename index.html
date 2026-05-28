@@ -93,7 +93,7 @@
         <button class="active" data-name="tang">唐诗</button>
         <button data-name="song">宋词</button>
         <button data-name="other">其他</button>
-        <a href="https://github.com/chenjiahui777/chenjiahui777.github.io/tree/main/poems" target="_blank">录入诗词</a>
+        <a href="https://github.com/chenjiahui7777/chenjiahui7777.github.io/tree/main/poems" target="_blank">录入诗词</a>
     </div>
 
     <!-- 诗词展示区 -->
@@ -101,8 +101,8 @@
     <div class="tip">点击标签切换分类 | 刷新查看最新内容</div>
 
     <script>
-        // 适配你的仓库地址（已修正，可直接使用）
-        const baseUrl = "https://raw.githubusercontent.com/chenjiahui777/chenjiahui777.github.io/main/poems/";
+        // 已修正为你的正确用户名 chenjiahui7777（四个7）
+        const baseUrl = "https://chenjiahui7777.github.io/chenjiahui7777.github.io/poems/";
 
         let nowText = ""; // 当前分类全文
         const box = document.getElementById("poemBox");
@@ -120,7 +120,7 @@
                 nowText = await res.text();
                 box.innerText = nowText || "暂无内容，快去录入吧";
             }catch(err){
-                box.innerText = "加载失败，请稍后重试（请检查poems文件夹下的txt文件是否存在）";
+                box.innerText = "加载失败，请稍后重试";
             }
         }
 
