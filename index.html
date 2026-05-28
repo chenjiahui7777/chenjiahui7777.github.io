@@ -3,92 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数理发电站 · 解题笔记</title>
-    <!-- 引入公式渲染 -->
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>诗词雅集</title>
     <style>
-        :root {
-            --bg-main: #121212;
-            --bg-card: #1e1e1e;
-            --text-main: #e0e0e0;
-            --text-accent: #61dafb;
-            --border-color: #333;
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            max-width:800px;
+            margin:0 auto;
+            padding:30px 20px;
+            background:#f6efe0;
+            font-family:"SimSun",serif;
+            color:#3a2e1f;
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        h1{text-align:center;margin-bottom:20px;}
+        /* 搜索栏 */
+        .search-box{
+            display:flex;
+            gap:8px;
+            justify-content:center;
+            margin-bottom:25px;
         }
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'Consolas', 'Microsoft Yahei', monospace;
-            line-height: 1.7;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
+        .search-box input{
+            width:70%;
+            padding:9px 12px;
+            border:1px solid #ccc;
+            border-radius:4px;
+            font-size:15px;
         }
-        header {
-            text-align: center;
-            margin: 40px 0;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
+        .search-box button{
+            padding:9px 18px;
+            border:none;
+            background:#a0522d;
+            color:#fff;
+            border-radius:4px;
+            cursor:pointer;
         }
-        h1 {
-            color: var(--text-accent);
-            margin-bottom: 10px;
+        /* 分类标签 */
+        .tab{
+            display:flex;
+            justify-content:center;
+            gap:10px;
+            margin-bottom:30px;
+            flex-wrap:wrap;
         }
-        .tagline {
-            color: #aaa;
+        .tab button{
+            padding:8px 20px;
+            border:none;
+            background:#7c684e;
+            color:#fff;
+            border-radius:4px;
+            cursor:pointer;
         }
-        .nav-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin: 30px 0;
+        .tab button.active{background:#a0522d;}
+        .tab a{
+            padding:8px 20px;
+            background:#7c684e;
+            color:#fff;
+            text-decoration:none;
+            border-radius:4px;
         }
-        .nav-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: 6px;
-            color: var(--text-main);
-            text-decoration: none;
-            transition: 0.2s;
+        /* 内容区域 */
+        .content{
+            background:#fff;
+            padding:30px;
+            border-radius:8px;
+            line-height:2.4;
+            font-size:17px;
+            min-height:300px;
+            white-space:pre-wrap;
         }
-        .nav-item:hover {
-            border-color: var(--text-accent);
-            color: var(--text-accent);
-        }
-        .intro {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 25px;
-        }
-        .intro h2 {
-            color: var(--text-accent);
-            margin-bottom: 15px;
+        .tip{
+            text-align:center;
+            margin-top:30px;
+            color:#888;
+            font-size:14px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>数理发电站 · 解题笔记</h1>
-        <p class="tagline">高数 | 线性代数 | 算法 · 专题分享与手写推导</p>
-    </header>
+    <h1>诗词雅集</h1>
 
-    <nav class="nav-box">
-        <a href="calculus.html" class="nav-item">微积分</a>
-        <a href="linear-algebra.html" class="nav-item">线性代数</a>
-        <a href="highlights.html" class="nav-item">专题分享</a>
-    </nav>
-
-    <div class="intro">
-        <h2>关于本站</h2>
-        <p>这里是频道「数理发电站」的配套笔记站，整理平时分享的手写推导、专题思考和习题解答。</p>
-        <p>支持公式渲染
+    <!-- 搜索区域 -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="输入关键词搜索诗词、作者、名句" onkeydown="if(event.keyCode===13)doSearch()">
+        <button onclick="doSearch()">搜索</button>
     </div>
+
+    <!-- 分类切换 -->
+    <div class="tab">
+        <button class="active" data-name="tang">唐诗</button>
+        <button data-name="song">宋词</button>
+        <button data-name="other">其他</button>
+        <a href="https://github.com/chenjiahui777/chenjiahui777.github.io/tree/main/poems" target="_blank">录入诗词</a>
+    </div>
+
+    <!-- 诗词展示区 -->
+    <div class="content" id="poemBox">加载中...</div>
+    <div class="tip">点击标签切换分类 | 刷新查看最新内容</div>
+
+    <script>
+        // 适配你的仓库地址
+        const baseUrl = "https://raw.githubusercontent.com/chenjiahui777/chenjiahui777.github.io/main/poems/";
+
+        let nowText = ""; // 当前分类全文
+        const box = document.getElementById("poemBox");
+        const input = document.getElementById("searchInput");
+        const btns = document.querySelectorAll(".tab button");
+
+        // 加载对应分类文本
+        async function loadText(fileName){
+            box.innerText = "加载中...";
+            try{
+                const res = await fetch(baseUrl + fileName + ".txt");
+                nowText = await res.text();
+                box.innerText = nowText || "暂无内容，快去录入吧";
+            }catch(err){
+                box.innerText = "加载失败，请稍后重试";
+            }
+        }
+
+        // 搜索功能
+        function doSearch(){
+            const key = input.value.trim();
+            if(!key){
+                box.innerText = nowText;
+                return;
+            }
+            // 按关键词匹配，标红关键词
+            const reg = new RegExp(key,"g");
+            const result = nowText.replace(reg,`<span style="color:red;">${key}</span>`);
+            box.innerHTML = result || "未找到相关诗词";
+        }
+
+        // 分类切换绑定事件
+        btns.forEach(btn => {
+            btn.addEventListener("click",()=>{
+                btns.forEach(b=>b.classList.remove("active"));
+                btn.classList.add("active");
+                input.value = ""; // 清空搜索框
+                loadText(btn.dataset.name);
+            })
+        });
+
+        // 页面默认加载唐诗
+        loadText("tang");
+    </script>
 </body>
 </html>
